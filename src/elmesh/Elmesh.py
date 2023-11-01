@@ -54,6 +54,61 @@ def regular_elevation_body(z,surface):
     x,y=np.meshgrid(np.arange(z.shape[0]), np.arange(z.shape[1]), indexing='ij')#Format [x,z]
     return elevation_body(x,y,z,surface)
 
+
+def rearrange_fourshift(a00, a01, a10, a11):
+    """Given four arrays of shape (n,m), return an array of shape (2n,2m), where the four input arrays are inserted in the form:
+    [a00[0,0], a01[0,0], ...]
+    [a10[0,0], a11[0,0], ...]
+    [   ...  ,    ...  , ...]
+
+    Parameters
+    ----------
+    a00, a01, a10, a11: np.ndarray
+        Arrays of shape (n,m)
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape (2n,2m)
+    """
+    result=np.zeros((2*a00.shape[0], 2*a00.shape[1]))
+    result[::2,::2]=a00
+    result[::2,1::2]=a01
+    result[1::2,::2]=a10
+    result[1::2,1::2]=a11
+    return result
+
+def transform_to_columnar_elevation(x,y,z, dx=None, dy=None):
+    """Transform an elevation grid into a columnar elevation grid, where each point is split into four corner points of a cell, and the elevation is the same for all four points.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        X coordinates of shape (n,m)
+    y : np.ndarray
+        Y coordinates of shape (n,m)
+    z : np.ndarray
+        Z coordinates of shape (n,m)
+    dx : float, optional
+        Shift of the corner points relative to the original point in x direction, by default None
+    dy : float, optional
+        Shift of the corner poitns relative to the original point in y direction, by default None
+
+    Returns
+    -------
+    np.ndarray, np.ndarray, np.ndarray
+        The new x,y,z coordinates of shape (2n,2m)
+    """
+    if dx is None:
+        dx=x[1,0]-x[0,0]
+    if dy is None: 
+        dy=y[0,1]-y[0,0]
+
+    xnew=rearrange_fourshift(x-dx,x-dx,x+dx,x+dx)
+    ynew=rearrange_fourshift(y-dy,y+dy,y-dy,y+dy)
+    znew=rearrange_fourshift(z,z,z,z)
+    return xnew, ynew, znew
+
 #Tests#####################################################
 #%%
 # samples=100
