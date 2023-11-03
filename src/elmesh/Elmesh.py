@@ -100,9 +100,9 @@ def transform_to_columnar_elevation(x,y,z, dx=None, dy=None):
         The new x,y,z coordinates of shape (2n,2m)
     """
     if dx is None:
-        dx=x[1,0]-x[0,0]
+        dx=(x[1,0]-x[0,0])/2.0
     if dy is None: 
-        dy=y[0,1]-y[0,0]
+        dy=(y[0,1]-y[0,0])/2.0
 
     xnew=rearrange_fourshift(x-dx,x-dx,x+dx,x+dx)
     ynew=rearrange_fourshift(y-dy,y+dy,y-dy,y+dy)
